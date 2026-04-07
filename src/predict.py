@@ -71,39 +71,51 @@ def split_text(text, char_probs, threshold):
         sentences.append(text[prev:].strip())
     return [s for s in sentences if s]
 
+def process_file(input_path, output_path, model, tokenizer, threshold, device):
+    raw_text = Path(input_path).read_text(encoding='utf-8')
+    if not raw_text.strip():
+        print(f"  Skipping {input_path.name} (empty)")
+        return
+    char_probs = predict_xlmr(model, tokenizer, raw_text, device=device)
+    sentences = split_text(raw_text, char_probs, threshold)
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as f:
+        for idx, s in enumerate(sentences, 1):
+            f.write(f"{idx}) {s}\n\n")
+    print(f"  {input_path.name} -> {len(sentences)} sentences")
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_file", type=str, required=True, help="Raw TXT file to process")
+    parser.add_argument("--input", type=str, required=True, help="Input TXT file or folder of TXT files")
+    parser.add_argument("--output", type=str, required=True, help="Output TXT file or folder")
     parser.add_argument("--model_path", type=str, required=True, help="Path to best_xlmr_model.pt")
     parser.add_argument("--model_name_or_path", type=str, default="xlm-roberta-large", help="HuggingFace base model")
     parser.add_argument("--threshold", type=float, default=0.65, help="Decision threshold")
-    parser.add_argument("--output_file", type=str, required=True, help="Output TXT with splits")
     args = parser.parse_args()
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Loading tokenizer via {args.model_name_or_path}...")
+    print(f"Loading model on {device}...")
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, local_files_only=True)
-
-    print("Loading model weights...")
     model = XLMRSentenceSplitter(model_name=args.model_name_or_path).to(device)
     model.load_state_dict(torch.load(args.model_path, map_location=device, weights_only=True))
     model.eval()
 
-    print(f"Reading input from {args.input_file}...")
-    raw_text = Path(args.input_file).read_text(encoding='utf-8')
-    if not raw_text.strip():
-        print("Input file is empty!")
-        return
+    input_path = Path(args.input)
+    output_path = Path(args.output)
 
-    print("Running inference...")
-    char_probs = predict_xlmr(model, tokenizer, raw_text, device=device)
-
-    sentences = split_text(raw_text, char_probs, args.threshold)
-
-    print(f"Writing {len(sentences)} sentences to {args.output_file}...")
-    with open(args.output_file, "w", encoding="utf-8") as f:
-        for idx, s in enumerate(sentences, 1):
-            f.write(f"{idx}) {s}\n\n")
+    if input_path.is_dir():
+        txt_files = sorted(input_path.glob("*.txt"))
+        if not txt_files:
+            print(f"No .txt files found in {input_path}")
+            return
+        output_path.mkdir(parents=True, exist_ok=True)
+        print(f"Processing {len(txt_files)} files from {input_path}...")
+        for f in txt_files:
+            process_file(f, output_path / f.name, model, tokenizer, args.threshold, device)
+    else:
+        print(f"Processing {input_path.name}...")
+        process_file(input_path, output_path, model, tokenizer, args.threshold, device)
 
     print("Done!")
 

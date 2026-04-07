@@ -10,9 +10,7 @@ The model performs per-character boundary classification using a sliding-window 
 ## Repository Structure
 
 ```
-sentence_splitting/
-|-- UD_*/                   # 8 UD datasets (not tracked in git)
-|-- data/                   # JSONL test sets and results (not tracked in git)
+sentence_splitter/
 |-- src/
 |   |-- __init__.py
 |   |-- data.py             # Parse .sent_split, char alignment, windowing, Dataset
@@ -25,7 +23,7 @@ sentence_splitting/
 |   |-- utils.py            # Config loading, seeding, logging helpers
 |   |-- train_xlmr.py       # [CLI] Self-contained training script
 |   |-- evaluate_xlmr.py    # [CLI] Threshold tuning + per-dataset evaluation
-|   |-- predict.py          # [CLI] Single-file inference on arbitrary text
+|   |-- predict.py          # [CLI] Inference on files or folders
 |   |-- run_baselines.py    # [CLI] spaCy + NLTK baseline comparison
 |   |-- optimize.py         # [CLI] Threshold + ensemble weight grid search
 |   |-- eval_test.py        # [CLI] Run inference on JSONL test sets
@@ -34,9 +32,13 @@ sentence_splitting/
 |-- configs/
 |   |-- xlmr.yaml           # XLM-R hyperparameters
 |   +-- sat.yaml            # SaT configuration
-|-- checkpoints/            # Model checkpoints (not tracked in git)
+|-- input/                  # Place .txt files here for inference
+|-- output/                 # Split results appear here
+|-- checkpoints/            # Model checkpoint (downloaded via download_model.py)
+|-- UD_*/                   # 8 UD datasets (downloaded via download_model.py --data)
+|-- data/                   # JSONL gold test sets (downloaded with --data)
+|-- download_model.py       # Download model and optionally dataset from HuggingFace
 |-- results.md              # Per-dataset F1 scores across thresholds
-|-- PLAN.md                 # Architecture design and implementation plan
 +-- requirements.txt
 ```
 
@@ -54,26 +56,33 @@ The data pipeline:
 1. Splits on `<EOS>` to recover the clean text and the character positions of each boundary
 2. A boundary at position `i` means the sentence ends at character `i` (inclusive)
 
-The 8 UD datasets (4 English, 4 Italian) should be placed in the project root as `UD_*/` directories, each containing `*-ud-train.sent_split`, `*-ud-dev.sent_split`, and `*-ud-test.sent_split` files.
+The 8 UD datasets (4 English, 4 Italian) can be downloaded automatically with `python download_model.py --data`. They are placed in the project root as `UD_*/` directories, each containing `*-ud-train.sent_split`, `*-ud-dev.sent_split`, and `*-ud-test.sent_split` files.
+
+The dataset is hosted at [Famezz/sentence-splitter-ud-data](https://huggingface.co/datasets/Famezz/sentence-splitter-ud-data) on HuggingFace.
 
 ---
 
 ## Environment Setup
 
 ```bash
-cd sentence_splitting/
+git clone https://github.com/LucaTamSapienza/sentence_splitter.git
+cd sentence_splitter
 python3 -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install torch --index-url https://download.pytorch.org/whl/cu121   # CUDA 12.1
 pip install -r requirements.txt
+python download_model.py   # downloads checkpoint (~2.2GB) from HuggingFace
 ```
 
 For CPU-only inference:
 ```bash
 pip install torch --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
+python download_model.py
 ```
+
+The checkpoint is hosted at [Famezz/xlmr-sentence-splitter](https://huggingface.co/Famezz/xlmr-sentence-splitter) on HuggingFace.
 
 Additional setup for baselines:
 ```bash
@@ -130,6 +139,12 @@ Temperature-weighted sampling (T=2.0) ensures small datasets (MarkIT, ParTUT) ar
 
 ### How to run training
 
+First download the dataset if you haven't already:
+```bash
+python download_model.py --data
+```
+
+Then train:
 ```bash
 python src/train_xlmr.py \
     --data_dir ./ \
@@ -186,14 +201,23 @@ python src/run_baselines.py --split test --verbose
 
 ## Inference on Arbitrary Text
 
+**Single file:**
 ```bash
 python src/predict.py \
-    --input_file /path/to/input.txt \
-    --model_path checkpoints/best_xlmr_model.pt \
-    --model_name_or_path xlm-roberta-large \
-    --threshold 0.65 \
-    --output_file outputs/predicted_sentences.txt
+    --input path/to/input.txt \
+    --output path/to/output.txt \
+    --model_path checkpoints/best_xlmr_model.pt
 ```
+
+**Entire folder** (processes all `.txt` files):
+```bash
+python src/predict.py \
+    --input input/ \
+    --output output/ \
+    --model_path checkpoints/best_xlmr_model.pt
+```
+
+Place your text files in `input/`, run the command, and find the split results in `output/`.
 
 Output format (one sentence per entry, numbered):
 ```

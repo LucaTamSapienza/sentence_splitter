@@ -156,23 +156,23 @@ python src/evaluate_xlmr.py \
 
 `--predictions_dir` is optional; if provided, numbered sentence predictions are saved per dataset.
 
-### Results on UD test sets
+### Results on UD test sets (threshold tuned on dev: t=0.65)
 
-| Dataset | t=0.5 | t=0.7 | t=0.8 |
-|---------|-------|-------|-------|
-| EN-EWT  | 0.975 | 0.977 | 0.976 |
-| EN-GUM  | 0.985 | 0.987 | 0.987 |
-| EN-ParTUT | 0.997 | 0.997 | 0.997 |
-| EN-PUD  | 0.985 | 0.988 | 0.990 |
-| IT-ISDT | 0.997 | 0.997 | 0.997 |
-| IT-MarkIT | 0.997 | 0.997 | 0.997 |
-| IT-ParTUT | 1.000 | 1.000 | 1.000 |
-| IT-VIT  | 0.965 | 0.981 | 0.986 |
-| **Macro F1** | **0.9876** | **0.9904** | **0.9912** |
+| Dataset | NLTK | spaCy | XLM-R (t=0.65) |
+|---------|------|-------|----------------|
+| EN-EWT  | 0.803 | 0.819 | 0.957 |
+| EN-GUM  | 0.919 | 0.923 | 0.979 |
+| EN-ParTUT | 0.993 | 0.987 | 0.997 |
+| EN-PUD  | 0.991 | 0.997 | 0.988 |
+| IT-ISDT | 0.954 | 0.991 | 0.997 |
+| IT-MarkIT | 0.917 | 0.984 | 0.997 |
+| IT-ParTUT | 0.993 | 0.993 | 1.000 |
+| IT-VIT  | 0.958 | 0.921 | 0.976 |
+| **Macro F1** | **0.9411** | **0.9519** | **0.9863** |
 
-Baseline to beat: spaCy macro F1 = 0.9553.
+Baselines: NLTK macro F1 = 0.9411, spaCy macro F1 = 0.9519.
 
-Recommended threshold: 0.8 (best macro F1 on test sets).
+Recommended threshold: 0.65 (best macro F1 on dev sets).
 
 Full results with all thresholds and precision/recall: see `results.md`.
 
@@ -191,7 +191,7 @@ python src/predict.py \
     --input_file /path/to/input.txt \
     --model_path checkpoints/best_xlmr_model.pt \
     --model_name_or_path xlm-roberta-large \
-    --threshold 0.8 \
+    --threshold 0.65 \
     --output_file outputs/predicted_sentences.txt
 ```
 

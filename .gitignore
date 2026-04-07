@@ -8,3 +8,5 @@ logs/
 outputs/
 UD_*/
 data/
+.venv/
+.DS_Store

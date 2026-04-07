@@ -166,7 +166,7 @@ def main():
     print("-" * 68)
     macro_avg = sum(all_f1s)/len(all_f1s) if all_f1s else 0.0
     print(f"{'MACRO AVG':<40} {'':>7} {'':>7} {macro_avg:>7.4f}")
-    print(f"\nBaseline to beat: spaCy = 0.9553")
+    print(f"\nBaseline to beat: NLTK = 0.9411, spaCy = 0.9519")
 
 if __name__ == '__main__':
     main()

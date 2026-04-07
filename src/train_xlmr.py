@@ -1,3 +1,10 @@
+"""
+src/train_xlmr.py — Train an XLM-RoBERTa sentence splitter on UD treebank data.
+
+Usage:
+    python src/train_xlmr.py --data_dir ./ --output_dir checkpoints --model_name_or_path xlm-roberta-large
+"""
+
 import argparse
 import logging
 import random

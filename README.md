@@ -12,23 +12,27 @@ The model performs per-character boundary classification using a sliding-window 
 ```
 sentence_splitter/
 |-- src/
-|   |-- __init__.py
-|   |-- data.py             # Parse .sent_split, char alignment, windowing, Dataset
+|   |-- __init__.py         # Package manifest + public API re-exports
+|   |                       #
+|   |                       # --- Core library ---
 |   |-- model.py            # XLMRSentenceSplitter class + focal loss
-|   |-- train.py            # Training loop module (fp16, early stopping)
-|   |-- inference.py        # Sliding window prediction + char probability mapping
-|   |-- ensemble.py         # Multi-model weighted averaging + weight optimization
-|   |-- rules.py            # Blank lines, abbreviation lists, hard overrides
+|   |-- data.py             # Parse .sent_split, char alignment, windowing, Dataset
+|   |-- train.py            # Training loop (fp16, early stopping)
+|   |-- inference.py        # Sliding-window prediction + char probability mapping
 |   |-- evaluate.py         # Boundary F1, sentence exact match, per-dataset reports
+|   |-- ensemble.py         # Multi-model weighted averaging + weight optimization
+|   |-- rules.py            # Rule-based boundary heuristics (abbreviations, blank lines)
 |   |-- utils.py            # Config loading, seeding, logging helpers
-|   |-- train_xlmr.py       # [CLI] Self-contained training script
-|   |-- evaluate_xlmr.py    # [CLI] Threshold tuning + per-dataset evaluation
-|   |-- predict.py          # [CLI] Inference on files or folders
-|   |-- run_baselines.py    # [CLI] spaCy + NLTK baseline comparison
-|   |-- optimize.py         # [CLI] Threshold + ensemble weight grid search
-|   |-- eval_test.py        # [CLI] Run inference on JSONL test sets
-|   |-- build_test.py       # [CLI] Convert <EOS>-marked files to JSONL
-|   +-- train_sat.py        # [CLI] wtpsplit/SaT out-of-box evaluation
+|   |                       #
+|   |                       # --- CLI scripts (run directly) ---
+|   |-- train_xlmr.py       # Train an XLM-R sentence splitter on UD data
+|   |-- evaluate_xlmr.py    # Tune threshold on dev & evaluate on test sets
+|   |-- predict.py          # Run inference on files or folders
+|   |-- run_baselines.py    # NLTK + spaCy baseline evaluation
+|   |-- optimize.py         # Grid-search ensemble weights & threshold
+|   |-- eval_test.py        # Evaluate on JSONL gold test sets
+|   |-- build_test.py       # Convert <EOS>-annotated files to JSONL
+|   +-- train_sat.py        # Evaluate wtpsplit / SaT models
 |-- configs/
 |   |-- xlmr.yaml           # XLM-R hyperparameters
 |   +-- sat.yaml            # SaT configuration

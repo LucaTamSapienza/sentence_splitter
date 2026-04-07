@@ -1,3 +1,11 @@
+"""
+src/predict.py — Run sentence boundary prediction on input files or folders.
+
+Usage:
+    python src/predict.py --input input/ --output output/ --model_path checkpoints/best_xlmr_model.pt
+    python src/predict.py --input file.txt --output result.txt --model_path checkpoints/best_xlmr_model.pt
+"""
+
 import argparse
 import numpy as np
 import torch

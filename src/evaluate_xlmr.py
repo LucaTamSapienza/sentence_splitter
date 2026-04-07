@@ -1,3 +1,10 @@
+"""
+src/evaluate_xlmr.py — Tune decision threshold on dev sets and evaluate on test sets.
+
+Usage:
+    python src/evaluate_xlmr.py --data_dir ./ --model_path checkpoints/best_xlmr_model.pt
+"""
+
 import argparse
 import logging
 import random

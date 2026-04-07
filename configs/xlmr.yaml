@@ -1,0 +1,31 @@
+# XLM-RoBERTa sentence splitter — training hyperparameters
+
+model:
+  name: "xlm-roberta-large"        # 560M params, handles EN+IT
+  dropout: 0.1
+  focal_alpha: 0.75                 # upweight boundary class (1:25 imbalance)
+  focal_gamma: 2.0                  # focus on hard examples
+
+data:
+  window_size: 510                  # content tokens per window (512 - 2 for CLS/SEP)
+  stride: 256                       # 50% overlap between consecutive windows
+  temperature: 2.0                  # sampling temperature (higher = more uniform across datasets)
+  augment: true
+  seed: 42
+
+training:
+  output_dir: "checkpoints/xlmr"
+  batch_size: 16
+  grad_accum: 2                     # effective batch = 32
+  num_epochs: 10
+  learning_rate: 2.0e-5
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  fp16: true
+  patience: 3                       # early stopping (epochs without improvement)
+  eval_every_epochs: 1
+
+inference:
+  boundary_threshold: 0.5           # tuned later via scripts/optimize.py
+  batch_size: 32

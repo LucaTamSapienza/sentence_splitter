@@ -1,0 +1,21 @@
+# SaT (Segment any Text / wtpsplit) — inference and optional fine-tuning config
+
+model:
+  name: "sat-12l-sm"                # 300M params, purpose-built for sentence segmentation
+  # Alternatives: "sat-3l-sm" (faster), "sat-12l" (larger)
+
+inference:
+  boundary_threshold: 0.01          # wtpsplit uses newline probs, tune on dev
+  batch_size: 32
+
+# Language codes used by wtpsplit (ISO 639-1)
+language_codes:
+  en: "en"
+  it: "it"
+
+# Ensemble weights (tuned via scripts/optimize.py)
+ensemble:
+  xlmr_weight: 0.60
+  sat_weight: 0.35
+  rules_weight: 0.05
+  final_threshold: 0.5              # applied after weighted average

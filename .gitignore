@@ -1,0 +1,10 @@
+.venv_project/
+__pycache__/
+*.pyc
+*.pyo
+checkpoints/*.pt
+slurm/
+logs/
+outputs/
+UD_*/
+data/
